@@ -1,8 +1,6 @@
 # Projeto PSPD 2026.1 — Monitoramento e Observabilidade em Kubernetes
 ## Passo a Passo Explicativo Completo: Ambiente, Aplicação, Testes e Justificativas
 
-**Autor:** Manus AI • **Data:** Julho de 2026
-
 Este documento consolida todas as ações tomadas na construção do projeto, com as justificativas técnicas de cada decisão, os erros encontrados durante o desenvolvimento e as respectivas correções. Ele é suficiente para que qualquer aluno reproduza integralmente o ambiente e execute os experimentos em sua própria máquina para comparação de resultados.
 
 ---
