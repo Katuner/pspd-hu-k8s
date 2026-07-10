@@ -1,0 +1,33 @@
+# ============================================================
+# kind-cluster.yaml — Cluster Kubernetes local com kind
+# Topologia exigida pela especificação: 1 nó mestre (control-plane)
+# e 3 nós escravos (workers).
+#
+# Criação:  kind create cluster --name pspd --config k8s/kind-cluster.yaml
+# ============================================================
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: pspd
+nodes:
+  - role: control-plane
+    # Mapeia portas do host para os NodePorts dos serviços
+    extraPortMappings:
+      - containerPort: 30080   # frontend (NodePort)
+        hostPort: 30080
+      - containerPort: 30800   # api-gateway (NodePort)
+        hostPort: 30800
+      - containerPort: 30880   # keycloak (NodePort)
+        hostPort: 30880
+      - containerPort: 30900   # grafana (NodePort)
+        hostPort: 30900
+      - containerPort: 30990   # prometheus (NodePort)
+        hostPort: 30990
+  - role: worker
+    labels:
+      tier: app
+  - role: worker
+    labels:
+      tier: app
+  - role: worker
+    labels:
+      tier: app

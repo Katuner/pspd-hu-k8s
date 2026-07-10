@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Universitário — Portal Clínico HL7/FHIR</title>
+<style>
+  :root { --azul:#0b4f79; --azul2:#0d6efd; --cinza:#f4f6f8; --borda:#dbe2e8; }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI',system-ui,sans-serif; }
+  body { background:var(--cinza); color:#22303c; }
+  header { background:var(--azul); color:#fff; padding:14px 28px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:1.15rem; font-weight:600; }
+  header .who { font-size:.85rem; opacity:.9; }
+  main { max-width:1100px; margin:24px auto; padding:0 16px; }
+  .card { background:#fff; border:1px solid var(--borda); border-radius:10px; padding:22px; margin-bottom:18px; }
+  .card h2 { font-size:1rem; margin-bottom:14px; color:var(--azul); }
+  label { display:block; font-size:.8rem; margin:8px 0 4px; color:#51616e; }
+  input, select { width:100%; padding:9px 11px; border:1px solid var(--borda); border-radius:6px; font-size:.9rem; }
+  button { background:var(--azul2); border:none; color:#fff; padding:10px 18px; border-radius:6px; font-size:.9rem; cursor:pointer; margin-top:12px; }
+  button:hover { filter:brightness(1.08); }
+  button.sec { background:#5c6d7b; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:200px; }
+  .hidden { display:none; }
+  pre { background:#0e1620; color:#c9e3ff; border-radius:8px; padding:16px; font-size:.78rem; overflow:auto; max-height:480px; }
+  .msg { padding:10px 14px; border-radius:6px; margin-top:10px; font-size:.85rem; }
+  .err { background:#fdecec; color:#a12622; border:1px solid #f5c2c0; }
+  .ok  { background:#e8f6ee; color:#1c6b3c; border:1px solid #bfe5cd; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .chip { background:#e7f0fa; color:var(--azul); border-radius:14px; padding:5px 12px; font-size:.78rem; cursor:pointer; border:1px solid #c8ddf2; }
+  table { width:100%; border-collapse:collapse; margin-top:12px; font-size:.85rem; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--borda); }
+  th { background:#f0f4f8; }
+  .hintbox { font-size:.78rem; color:#5c6d7b; margin-top:10px; line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Hospital Universitário — Portal Clínico (HL7/FHIR)</h1>
+  <div class="who" id="who"></div>
+</header>
+<main>
+  <!-- ============ LOGIN ============ -->
+  <section class="card" id="loginCard">
+    <h2>Autenticação (Keycloak — OAuth2/OpenID Connect)</h2>
+    <div class="row">
+      <div><label>Usuário</label><input id="username" placeholder="ex.: med.cardoso"></div>
+      <div><label>Senha</label><input id="password" type="password" placeholder="senha"></div>
+    </div>
+    <button onclick="login()">Entrar</button>
+    <div id="loginMsg"></div>
+    <div class="hintbox">
+      Usuários de demonstração (senha <b>pspd123</b> para todos):<br>
+      <b>Médicos:</b> med.cardoso, med.souza, med.lima, med.ferreira &nbsp;|&nbsp;
+      <b>Estagiários:</b> est.oliveira (sup.: med.cardoso), est.santos (sup.: med.souza) &nbsp;|&nbsp;
+      <b>Pesquisadores:</b> pesq.ramos (DIABETES, HIPERTENSAO), pesq.telles (OBESIDADE, PNEUMONIA)
+    </div>
+  </section>
+
+  <!-- ============ CONSULTAS ============ -->
+  <section class="card hidden" id="queryCard">
+    <h2>Consultas</h2>
+    <div class="chips" id="chips"></div>
+    <div class="row" id="paramRow" style="margin-top:12px">
+      <div id="patientBox" class="hidden"><label>ID do paciente</label><input id="patientId" placeholder="ex.: P000001"></div>
+      <div id="cohortBox" class="hidden"><label>Condição clínica (coorte)</label>
+        <select id="cohortCode">
+          <option>DIABETES</option><option>HIPERTENSAO</option><option>OBESIDADE</option>
+          <option>PNEUMONIA</option><option>ASMA</option><option>DPOC</option>
+          <option>INSUF_CARDIACA</option><option>DISLIPIDEMIA</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="runQuery()">Consultar</button>
+    <button class="sec" onclick="logout()">Sair</button>
+    <div id="queryMsg"></div>
+  </section>
+
+  <section class="card hidden" id="resultCard">
+    <h2>Resposta (JSON HL7/FHIR)</h2>
+    <div id="tableView"></div>
+    <pre id="result"></pre>
+  </section>
+</main>
+
+<script>
+// A URL do gateway é injetada pelo nginx via /config.js; fallback: mesma origem em /gw
+const GATEWAY = (window.GATEWAY_URL || '/gw');
+let token = null, role = null, currentQuery = null;
+
+const QUERIES = {
+  MEDICO: [
+    {id:'patients', label:'Meus pacientes', path:()=>'/api/patients'},
+    {id:'summary', label:'Resumo clínico', path:()=>`/api/patients/${pid()}/summary`, needsPatient:true},
+    {id:'history', label:'Histórico clínico', path:()=>`/api/patients/${pid()}/history`, needsPatient:true},
+    {id:'labs', label:'Exames laboratoriais', path:()=>`/api/patients/${pid()}/labs`, needsPatient:true},
+    {id:'meds', label:'Medicamentos', path:()=>`/api/patients/${pid()}/medications`, needsPatient:true},
+  ],
+  ESTAGIARIO: [
+    {id:'patients', label:'Pacientes supervisionados', path:()=>'/api/patients'},
+    {id:'summary', label:'Resumo clínico (parcial)', path:()=>`/api/patients/${pid()}/summary`, needsPatient:true},
+    {id:'labs', label:'Exames (parcial)', path:()=>`/api/patients/${pid()}/labs`, needsPatient:true},
+    {id:'meds', label:'Medicamentos (parcial)', path:()=>`/api/patients/${pid()}/medications`, needsPatient:true},
+  ],
+  PESQUISADOR: [
+    {id:'projects', label:'Meus projetos', path:()=>'/api/research/projects'},
+    {id:'cohort', label:'Coorte (anonimizada)', path:()=>`/api/research/cohort/${code()}`, needsCohort:true},
+    {id:'stats', label:'Estatísticas agregadas', path:()=>`/api/research/cohort/${code()}/stats`, needsCohort:true},
+  ],
+};
+
+const $ = id => document.getElementById(id);
+const pid = () => $('patientId').value.trim() || 'P000001';
+const code = () => $('cohortCode').value;
+
+async function login() {
+  $('loginMsg').innerHTML = '';
+  try {
+    const r = await fetch(`${GATEWAY}/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username:$('username').value.trim(), password:$('password').value})
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || 'Falha no login');
+    token = (await r.json()).access_token;
+    const me = await fetch(`${GATEWAY}/api/me`, {headers:{Authorization:`Bearer ${token}`}});
+    const info = await me.json();
+    role = info.role;
+    $('who').textContent = `${info.username} — ${role}`;
+    $('loginCard').classList.add('hidden');
+    $('queryCard').classList.remove('hidden');
+    renderChips();
+  } catch(e) {
+    $('loginMsg').innerHTML = `<div class="msg err">${e.message}</div>`;
+  }
+}
+
+function logout() {
+  token = role = null;
+  $('who').textContent = '';
+  $('queryCard').classList.add('hidden');
+  $('resultCard').classList.add('hidden');
+  $('loginCard').classList.remove('hidden');
+}
+
+function renderChips() {
+  const box = $('chips');
+  box.innerHTML = '';
+  QUERIES[role].forEach(q => {
+    const el = document.createElement('span');
+    el.className = 'chip';
+    el.textContent = q.label;
+    el.onclick = () => selectQuery(q, el);
+    box.appendChild(el);
+  });
+  selectQuery(QUERIES[role][0], box.firstChild);
+}
+
+function selectQuery(q, el) {
+  currentQuery = q;
+  document.querySelectorAll('.chip').forEach(c => c.style.background='#e7f0fa');
+  if (el) el.style.background='#c5dcf5';
+  $('patientBox').classList.toggle('hidden', !q.needsPatient);
+  $('cohortBox').classList.toggle('hidden', !q.needsCohort);
+}
+
+async function runQuery() {
+  $('queryMsg').innerHTML = '';
+  try {
+    const r = await fetch(`${GATEWAY}${currentQuery.path()}`, {headers:{Authorization:`Bearer ${token}`}});
+    const text = await r.text();
+    if (!r.ok) {
+      let detail = text;
+      try { detail = JSON.parse(text).detail; } catch {}
+      throw new Error(`HTTP ${r.status} — ${detail}`);
+    }
+    const data = JSON.parse(text);
+    $('result').textContent = JSON.stringify(data, null, 2);
+    renderTable(data);
+    $('resultCard').classList.remove('hidden');
+    $('queryMsg').innerHTML = `<div class="msg ok">Consulta realizada com sucesso.</div>`;
+  } catch(e) {
+    $('resultCard').classList.add('hidden');
+    $('queryMsg').innerHTML = `<div class="msg err">${e.message}</div>`;
+  }
+}
+
+function renderTable(data) {
+  const box = $('tableView');
+  box.innerHTML = '';
+  if (data.resourceType === 'Bundle' && data.entry) {
+    const patients = data.entry.filter(e => e.resource.resourceType === 'Patient').slice(0, 15);
+    if (patients.length) {
+      let html = '<table><tr><th>ID</th><th>Nome</th><th>Sexo</th><th>Nascimento / Faixa</th><th>Local</th></tr>';
+      patients.forEach(e => {
+        const p = e.resource;
+        const nome = p.name ? p.name[0].text : '<i>anonimizado</i>';
+        const faixa = p.birthDate || (p.extension ? p.extension[0].valueString : '-');
+        const addr = p.address ? [p.address[0].city, p.address[0].state].filter(Boolean).join('/') : '-';
+        html += `<tr><td>${p.id}</td><td>${nome}</td><td>${p.gender||'-'}</td><td>${faixa}</td><td>${addr}</td></tr>`;
+      });
+      html += '</table>';
+      if (data.entry.length > patients.length)
+        html += `<div class="hintbox">Mostrando ${patients.length} recursos Patient de ${data.total} recursos no Bundle. JSON completo abaixo.</div>`;
+      box.innerHTML = html;
+    }
+  }
+}
+</script>
+<script src="/config.js" onerror="void(0)"></script>
+</body>
+</html>

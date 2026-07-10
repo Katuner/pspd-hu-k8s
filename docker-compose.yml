@@ -1,0 +1,104 @@
+# ============================================================
+# docker-compose.yml — Validação funcional LOCAL (fase a)
+# Sobe toda a aplicação sem Kubernetes, com 1 réplica de cada
+# serviço, para validar autenticação, autorização, anonimização
+# e conversão HL7/FHIR antes de ir para o cluster.
+#
+# Pré-requisito: copiar o .proto para os serviços (uma única vez):
+#   ./scripts/build-images.sh   (ou: for s in api-gateway authorization patient-data data-transform; do cp proto/hospital.proto services/$s/; done)
+#
+#   docker compose up -d --build
+#   Frontend:  http://localhost:8081
+#   Gateway:   http://localhost:8000  (Swagger em /docs)
+#   Keycloak:  http://localhost:8080  (admin / admin123)
+# ============================================================
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hospital
+      POSTGRES_USER: hospital
+      POSTGRES_PASSWORD: hospital123
+    volumes:
+      - ./database/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-hospital.json:/opt/keycloak/data/import/realm-hospital.json:ro
+    ports:
+      - "8080:8080"
+
+  authorization:
+    build:
+      context: services/authorization
+    environment:
+      DB_HOST: postgres
+      DB_NAME: hospital
+      DB_USER: hospital
+      DB_PASSWORD: hospital123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "9101:9100"   # métricas Prometheus
+
+  patient-data:
+    build:
+      context: services/patient-data
+    environment:
+      DB_HOST: postgres
+      DB_NAME: hospital
+      DB_USER: hospital
+      DB_PASSWORD: hospital123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "9102:9100"
+
+  data-transform:
+    build:
+      context: services/data-transform
+    ports:
+      - "9103:9100"
+
+  api-gateway:
+    build:
+      context: services/api-gateway
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: hospital
+      KEYCLOAK_CLIENT_ID: hospital-frontend
+      AUTHZ_ADDR: authorization:50051
+      PATIENT_ADDR: patient-data:50051
+      TRANSFORM_ADDR: data-transform:50051
+    depends_on:
+      - keycloak
+      - authorization
+      - patient-data
+      - data-transform
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: services/frontend
+    depends_on:
+      - api-gateway
+    ports:
+      - "8081:80"

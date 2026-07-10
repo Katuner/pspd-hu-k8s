@@ -1,0 +1,78 @@
+{
+  "realm": "hospital",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 3600,
+  "roles": {
+    "realm": [
+      { "name": "MEDICO", "description": "Acesso FULL aos pacientes vinculados" },
+      { "name": "ESTAGIARIO", "description": "Acesso PARTIAL aos pacientes supervisionados" },
+      { "name": "PESQUISADOR", "description": "Acesso ANONYMIZED/AGGREGATED a coortes de projetos aprovados" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "hospital-frontend",
+      "name": "Portal Clínico do Hospital Universitário",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "protocol": "openid-connect",
+      "attributes": { "post.logout.redirect.uris": "*" }
+    }
+  ],
+  "users": [
+    {
+      "username": "med.cardoso", "enabled": true, "firstName": "Alberto", "lastName": "Cardoso",
+      "email": "med.cardoso@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["MEDICO"]
+    },
+    {
+      "username": "med.souza", "enabled": true, "firstName": "Beatriz", "lastName": "Souza",
+      "email": "med.souza@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["MEDICO"]
+    },
+    {
+      "username": "med.lima", "enabled": true, "firstName": "Caio", "lastName": "Lima",
+      "email": "med.lima@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["MEDICO"]
+    },
+    {
+      "username": "med.ferreira", "enabled": true, "firstName": "Diana", "lastName": "Ferreira",
+      "email": "med.ferreira@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["MEDICO"]
+    },
+    {
+      "username": "est.oliveira", "enabled": true, "firstName": "Eduardo", "lastName": "Oliveira",
+      "email": "est.oliveira@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["ESTAGIARIO"]
+    },
+    {
+      "username": "est.santos", "enabled": true, "firstName": "Fabiana", "lastName": "Santos",
+      "email": "est.santos@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["ESTAGIARIO"]
+    },
+    {
+      "username": "pesq.ramos", "enabled": true, "firstName": "Gustavo", "lastName": "Ramos",
+      "email": "pesq.ramos@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["PESQUISADOR"]
+    },
+    {
+      "username": "pesq.telles", "enabled": true, "firstName": "Helena", "lastName": "Telles",
+      "email": "pesq.telles@hospital.local", "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "pspd123", "temporary": false }],
+      "realmRoles": ["PESQUISADOR"]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+# ============================================================
+# ServiceMonitors — instruem o Prometheus Operator (instalado
+# pelo chart kube-prometheus-stack) a raspar as métricas /metrics
+# de cada serviço da aplicação.
+#
+# O label "release: monitoring" deve corresponder ao nome do
+# release Helm do kube-prometheus-stack (ver guia de instalação).
+# ============================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: api-gateway
+  namespace: hospital
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  endpoints:
+    - port: http          # o gateway expõe /metrics na própria porta HTTP
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: authorization
+  namespace: hospital
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: authorization
+  endpoints:
+    - port: metrics       # porta 9100 dedicada a métricas nos serviços gRPC
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: patient-data
+  namespace: hospital
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: patient-data
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: data-transform
+  namespace: hospital
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: data-transform
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgres-exporter
+  namespace: hospital
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: postgres-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

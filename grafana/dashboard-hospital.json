@@ -1,0 +1,117 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "title": "Requisições por segundo (API Gateway)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{
+        "expr": "sum(rate(http_requests_total{namespace=\"hospital\"}[1m])) by (route)",
+        "legendFormat": "{{route}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "Latência HTTP p50 / p95 / p99 (API Gateway)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
+    },
+    {
+      "title": "Tempo de resposta por serviço gRPC (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(grpc_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le, service))",
+        "legendFormat": "{{service}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
+    },
+    {
+      "title": "Erros HTTP (4xx / 5xx) e falhas de autenticação",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "sum(rate(http_requests_total{namespace=\"hospital\", status=~\"4..\"}[1m]))", "legendFormat": "4xx" },
+        { "expr": "sum(rate(http_requests_total{namespace=\"hospital\", status=~\"5..\"}[1m]))", "legendFormat": "5xx" },
+        { "expr": "sum(rate(auth_failures_total{namespace=\"hospital\"}[1m])) by (reason)", "legendFormat": "auth: {{reason}}" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "Uso de CPU por pod (namespace hospital)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [{
+        "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"hospital\", container!=\"\"}[2m])) by (pod)",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "title": "Uso de memória por pod (namespace hospital)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [{
+        "expr": "sum(container_memory_working_set_bytes{namespace=\"hospital\", container!=\"\"}) by (pod)",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }
+    },
+    {
+      "title": "Quantidade de pods por deployment (efeito do HPA)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [{
+        "expr": "sum(kube_deployment_status_replicas_ready{namespace=\"hospital\"}) by (deployment)",
+        "legendFormat": "{{deployment}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "none", "min": 0 }, "overrides": [] }
+    },
+    {
+      "title": "Consultas ao banco de dados por segundo",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        { "expr": "sum(rate(db_queries_total{namespace=\"hospital\"}[1m])) by (query)", "legendFormat": "{{query}}" },
+        { "expr": "pg_stat_database_numbackends{datname=\"hospital\"}", "legendFormat": "conexões ativas (pg)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "title": "Decisões de autorização (ALLOW / DENY)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [{
+        "expr": "sum(rate(authz_decisions_total{namespace=\"hospital\"}[1m])) by (decision, level)",
+        "legendFormat": "{{decision}} {{level}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "title": "Transformações FHIR por tipo de recurso",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [{
+        "expr": "sum(rate(fhir_transformations_total{namespace=\"hospital\"}[1m])) by (resource_type)",
+        "legendFormat": "{{resource_type}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["pspd", "hospital", "fhir"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "title": "Hospital Universitário — Observabilidade da Aplicação",
+  "uid": "hospital-app",
+  "version": 1
+}

@@ -1,0 +1,19 @@
+# Namespace dedicado à aplicação do Hospital Universitário
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hospital
+  labels:
+    app.kubernetes.io/part-of: hospital
+---
+# Secret com as credenciais do banco (em produção usar um cofre de segredos)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+  namespace: hospital
+type: Opaque
+stringData:
+  POSTGRES_DB: hospital
+  POSTGRES_USER: hospital
+  POSTGRES_PASSWORD: hospital123

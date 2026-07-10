@@ -1,0 +1,86 @@
+# ============================================================
+# Keycloak — servidor OAuth2/OpenID Connect
+# Importa automaticamente o realm "hospital" (usuários + roles)
+# via ConfigMap criado pelo deploy-all.sh:
+#   kubectl -n hospital create configmap keycloak-realm \
+#     --from-file=keycloak/realm-hospital.json
+# Modo start-dev (banco H2 embutido) — suficiente para o laboratório.
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: hospital
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.0
+          args: ["start-dev", "--import-realm", "--http-port=8080"]
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: admin
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: admin123
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            # O hostname deve ser estável para que o "iss" dos tokens seja
+            # sempre http://keycloak:8080/realms/hospital (validação no gateway)
+            - name: KC_HOSTNAME
+              value: http://keycloak:8080
+            - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
+              value: "true"
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9000
+              name: mgmt
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1200Mi"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 12
+      volumes:
+        - name: realm
+          configMap:
+            name: keycloak-realm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: hospital
+  labels:
+    app: keycloak
+spec:
+  type: NodePort
+  selector:
+    app: keycloak
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30880
+      name: http
