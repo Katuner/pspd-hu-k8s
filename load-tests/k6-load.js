@@ -42,29 +42,31 @@ export const options = {
 // Perfis de usuário com as consultas que cada um realiza
 const PROFILES = [
   {
-    username: 'med.cardoso', role: 'MEDICO', weight: 4,
+    username: 'med.lima', role: 'MEDICO', weight: 4,
     queries: [
       '/api/patients',
-      '/api/patients/P000001/summary',
-      '/api/patients/P000005/history',
-      '/api/patients/P000009/labs',
-      '/api/patients/P000013/medications',
+      '/api/patients/P050000001/summary',
+      '/api/patients/P050000001/history',
+      '/api/patients/P050000001/labs',
+      '/api/patients/P050000001/medications',
     ],
   },
   {
-    username: 'med.souza', role: 'MEDICO', weight: 2,
-    queries: ['/api/patients', '/api/patients/P000002/summary', '/api/patients/P000006/labs'],
+    username: 'est.ferreira', role: 'ESTAGIARIO', weight: 2,
+    queries: ['/api/patients', '/api/patients/P050000002/summary', '/api/patients/P050000002/labs'],
   },
   {
-    username: 'est.oliveira', role: 'ESTAGIARIO', weight: 2,
-    queries: ['/api/patients', '/api/patients/P000001/summary', '/api/patients/P000005/labs'],
-  },
-  {
-    username: 'pesq.ramos', role: 'PESQUISADOR', weight: 2,
+    username: 'pes.mendes', role: 'PESQUISADOR', weight: 2,
     queries: [
       '/api/research/projects',
       '/api/research/cohort/DIABETES/stats',
-      '/api/research/cohort/HIPERTENSAO/stats',
+    ],
+  },
+  {
+    username: 'pes.araujo', role: 'PESQUISADOR', weight: 2,
+    queries: [
+      '/api/research/projects',
+      '/api/research/cohort/HYPERTENSION/stats',
     ],
   },
 ];
@@ -80,7 +82,7 @@ function getToken(profile) {
   if (tokens[key] && Date.now() < tokens[key].exp) return tokens[key].value;
   const start = Date.now();
   const res = http.post(`${BASE_URL}/auth/login`,
-    JSON.stringify({ username: profile.username, password: 'pspd123' }),
+    JSON.stringify({ username: profile.username, password: 'PseudoPEP2026!' }),
     { headers: { 'Content-Type': 'application/json' }, tags: { name: 'login' } });
   loginTime.add(Date.now() - start);
   const ok = check(res, { 'login 200': r => r.status === 200 });

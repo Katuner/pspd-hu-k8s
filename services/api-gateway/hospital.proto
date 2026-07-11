@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package hospital;
+
+// ============================================================
+// Authorization Service
+// Decide se um usuário pode acessar um recurso e em qual nível
+// (FULL, PARTIAL, ANONYMIZED, AGGREGATED) com base no papel do
+// usuário (JWT) e nos vínculos registrados no banco de dados.
+// ============================================================
+service AuthorizationService {
+  rpc CheckAccess (AccessRequest) returns (AccessResponse);
+}
+
+message AccessRequest {
+  string username = 1;      // ex.: med.cardoso
+  string role = 2;          // MEDICO | ESTAGIARIO | PESQUISADOR
+  string query_type = 3;    // ListaPacientes | ResumoClinico | HistoricoClinico | Exames | Medicamentos | Coorte | EstatisticasCoorte | Projetos
+  string patient_id = 4;    // preenchido quando a consulta é sobre um paciente
+  string cohort_code = 5;   // preenchido quando a consulta é de coorte (ex.: DIABETES)
+}
+
+message AccessResponse {
+  bool allowed = 1;             // true = ALLOW, false = DENY
+  string access_level = 2;      // FULL | PARTIAL | ANONYMIZED | AGGREGATED
+  string reason = 3;            // justificativa da decisão (auditoria)
+  string supervisor = 4;        // no caso de estagiário, o médico supervisor
+}
+
+// ============================================================
+// Patient Data Service
+// Executa as consultas SQL no banco PostgreSQL e devolve dados
+// brutos (não anonimizados). A anonimização é responsabilidade
+// do Data Transform Service.
+// ============================================================
+service PatientDataService {
+  rpc ListPatients (CaregiverRequest) returns (PatientList);
+  rpc GetPatientSummary (PatientRequest) returns (PatientSummary);
+  rpc GetPatientHistory (PatientRequest) returns (ClinicalEventList);
+  rpc GetPatientLabs (PatientRequest) returns (ClinicalEventList);
+  rpc GetPatientMedications (PatientRequest) returns (ClinicalEventList);
+  rpc GetCohort (CohortRequest) returns (CohortData);
+  rpc GetCohortStats (CohortRequest) returns (CohortStats);
+  rpc GetProjects (ResearcherRequest) returns (ProjectList);
+}
+
+message CaregiverRequest {
+  string username = 1;      // médico ou estagiário
+  string role = 2;
+  string supervisor = 3;    // para estagiário: username do médico supervisor
+}
+
+message PatientRequest {
+  string patient_id = 1;
+}
+
+message CohortRequest {
+  string condition_code = 1;  // ex.: DIABETES
+}
+
+message ResearcherRequest {
+  string username = 1;
+}
+
+message Patient {
+  string patient_id = 1;
+  string full_name = 2;
+  string birth_date = 3;   // YYYY-MM-DD
+  string gender = 4;       // male | female
+  string city = 5;
+  string state = 6;
+  string cpf = 7;
+  string cns = 8;
+}
+
+message PatientList {
+  repeated Patient patients = 1;
+}
+
+message Encounter {
+  string encounter_id = 1;
+  string patient_id = 2;
+  string start_date = 3;
+  string end_date = 4;
+  string encounter_type = 5;  // Ambulatorial | Emergencia | Internacao | Retorno
+  string department = 6;      // Cardiologia | Endocrinologia | ...
+}
+
+message ClinicalEvent {
+  string event_id = 1;
+  string patient_id = 2;
+  string encounter_id = 3;
+  string event_type = 4;    // CONDITION | OBSERVATION | MEDICATION
+  string event_code = 5;    // DIABETES | HBA1C | METFORMINA | ...
+  string description = 6;
+  string event_date = 7;
+  double value = 8;
+  string unit = 9;
+  bool has_value = 10;
+}
+
+message ClinicalEventList {
+  Patient patient = 1;
+  repeated ClinicalEvent events = 2;
+}
+
+message PatientSummary {
+  Patient patient = 1;
+  Encounter last_encounter = 2;
+  repeated ClinicalEvent conditions = 3;
+  repeated ClinicalEvent last_observations = 4;
+  repeated ClinicalEvent active_medications = 5;
+}
+
+message CohortPatientData {
+  Patient patient = 1;
+  repeated ClinicalEvent observations = 2;
+}
+
+message CohortData {
+  string condition_code = 1;
+  repeated CohortPatientData patients = 2;
+}
+
+message CohortStats {
+  string condition_code = 1;
+  int32 total_patients = 2;
+  map<string, int32> gender_distribution = 3;      // male: N, female: M
+  map<string, int32> age_distribution = 4;         // "18-39": N, "40-59": M, ...
+  map<string, int32> department_distribution = 5;  // Endocrinologia: N, ...
+  map<string, double> observation_averages = 6;    // HBA1C: 8.1, GLICEMIA: 152.3, ...
+}
+
+message Project {
+  string project_id = 1;
+  string title = 2;
+  string researcher = 3;
+  string condition_code = 4;
+  string status = 5;        // Aprovado | Expirado | Suspenso
+  string valid_until = 6;
+}
+
+message ProjectList {
+  repeated Project projects = 1;
+}
+
+// ============================================================
+// Data Transform Service
+// Recebe dados brutos + nível de acesso e devolve JSON FHIR
+// (Bundle) já anonimizado/agregado conforme o nível.
+// ============================================================
+service DataTransformService {
+  rpc TransformPatientList (TransformPatientListRequest) returns (FhirResponse);
+  rpc TransformSummary (TransformSummaryRequest) returns (FhirResponse);
+  rpc TransformEvents (TransformEventsRequest) returns (FhirResponse);
+  rpc TransformCohort (TransformCohortRequest) returns (FhirResponse);
+  rpc TransformStats (TransformStatsRequest) returns (FhirResponse);
+}
+
+message TransformPatientListRequest {
+  PatientList data = 1;
+  string access_level = 2;
+}
+
+message TransformSummaryRequest {
+  PatientSummary data = 1;
+  string access_level = 2;
+}
+
+message TransformEventsRequest {
+  ClinicalEventList data = 1;
+  string access_level = 2;
+  string bundle_type = 3;   // history | labs | medications
+}
+
+message TransformCohortRequest {
+  CohortData data = 1;
+  string access_level = 2;
+}
+
+message TransformStatsRequest {
+  CohortStats data = 1;
+  string access_level = 2;
+}
+
+message FhirResponse {
+  string json = 1;   // Bundle FHIR serializado em JSON
+}

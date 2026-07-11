@@ -25,11 +25,11 @@ END=$((SECONDS + DURATION))
 echo "==> Coletando métricas por ${DURATION}s em ${OUTDIR} (Ctrl+C para parar)"
 while [ $SECONDS -lt $END ]; do
   TS=$(date +%H:%M:%S)
-  kubectl -n hospital top pods --no-headers 2>/dev/null | \
+  kubectl -n grupo-5 top pods --no-headers 2>/dev/null | \
     awk -v ts="$TS" '{gsub("m","",$2); gsub("Mi","",$3); print ts","$1","$2","$3}' >> "$PODS_CSV" || true
   kubectl top nodes --no-headers 2>/dev/null | \
     awk -v ts="$TS" '{gsub("m","",$2); gsub("%","",$3); gsub("Mi","",$4); gsub("%","",$5); print ts","$1","$2","$3","$4","$5}' >> "$NODES_CSV" || true
-  kubectl -n hospital get hpa --no-headers 2>/dev/null | \
+  kubectl -n grupo-5 get hpa --no-headers 2>/dev/null | \
     awk -v ts="$TS" '{print ts","$1","$3","$4","$5","$6}' >> "$HPA_CSV" || true
   sleep $INTERVAL
 done

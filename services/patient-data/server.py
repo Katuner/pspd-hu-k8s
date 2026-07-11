@@ -80,7 +80,7 @@ def row_to_event(row) -> hospital_pb2.ClinicalEvent:
 
 
 PATIENT_COLS = "patient_id, full_name, birth_date, gender, city, state, cpf, cns"
-EVENT_COLS = "event_id, patient_id, encounter_id, event_type, event_code, description, event_date, value, unit"
+EVENT_COLS = "event_id, patient_id, encounter_id, event_type, code as event_code, description, event_date, value, unit"
 
 
 def timed(method_name):
@@ -110,14 +110,14 @@ class PatientDataServicer(hospital_pb2_grpc.PatientDataServiceServicer):
             rows = query(
                 f"SELECT {PATIENT_COLS} FROM patients WHERE patient_id IN "
                 "(SELECT patient_id FROM user_patient_assignments "
-                " WHERE username=%s AND link_type='estagiario' AND status='Ativo') "
+                " WHERE username=%s AND assignment_type='TRAINEE' AND active=true) "
                 "ORDER BY patient_id LIMIT 200",
                 (request.username,), "list_patients_estagiario")
         else:
             rows = query(
                 f"SELECT {PATIENT_COLS} FROM patients WHERE patient_id IN "
                 "(SELECT patient_id FROM user_patient_assignments "
-                " WHERE username=%s AND link_type='medico' AND status='Ativo') "
+                " WHERE username=%s AND assignment_type='ATTENDING' AND active=true) "
                 "ORDER BY patient_id LIMIT 200",
                 (request.username,), "list_patients_medico")
         return hospital_pb2.PatientList(patients=[row_to_patient(r) for r in rows])
@@ -142,16 +142,16 @@ class PatientDataServicer(hospital_pb2_grpc.PatientDataServiceServicer):
                 end_date=str(r[3]) if r[3] else "", encounter_type=r[4], department=r[5])
 
         conds = query(
-            f"SELECT DISTINCT ON (event_code) {EVENT_COLS} FROM clinical_events "
-            "WHERE patient_id=%s AND event_type='CONDITION' ORDER BY event_code, event_date DESC",
+            f"SELECT DISTINCT ON (code) {EVENT_COLS} FROM clinical_events "
+            "WHERE patient_id=%s AND event_type='CONDITION' ORDER BY code, event_date DESC",
             (request.patient_id,), "conditions")
         obs = query(
-            f"SELECT DISTINCT ON (event_code) {EVENT_COLS} FROM clinical_events "
-            "WHERE patient_id=%s AND event_type='OBSERVATION' ORDER BY event_code, event_date DESC",
+            f"SELECT DISTINCT ON (code) {EVENT_COLS} FROM clinical_events "
+            "WHERE patient_id=%s AND event_type='OBSERVATION' ORDER BY code, event_date DESC",
             (request.patient_id,), "last_observations")
         meds = query(
-            f"SELECT DISTINCT ON (event_code) {EVENT_COLS} FROM clinical_events "
-            "WHERE patient_id=%s AND event_type='MEDICATION' ORDER BY event_code, event_date DESC",
+            f"SELECT DISTINCT ON (code) {EVENT_COLS} FROM clinical_events "
+            "WHERE patient_id=%s AND event_type='MEDICATION' ORDER BY code, event_date DESC",
             (request.patient_id,), "active_medications")
 
         return hospital_pb2.PatientSummary(
@@ -205,15 +205,15 @@ class PatientDataServicer(hospital_pb2_grpc.PatientDataServiceServicer):
         rows = query(
             f"SELECT {PATIENT_COLS} FROM patients WHERE patient_id IN "
             "(SELECT DISTINCT patient_id FROM clinical_events "
-            " WHERE event_type='CONDITION' AND event_code=%s) "
+            " WHERE event_type='CONDITION' AND code=%s) "
             "ORDER BY patient_id LIMIT 500",
             (request.condition_code,), "cohort_patients")
         cohort = hospital_pb2.CohortData(condition_code=request.condition_code)
         for r in rows:
             patient = row_to_patient(r)
             obs = query(
-                f"SELECT DISTINCT ON (event_code) {EVENT_COLS} FROM clinical_events "
-                "WHERE patient_id=%s AND event_type='OBSERVATION' ORDER BY event_code, event_date DESC",
+                f"SELECT DISTINCT ON (code) {EVENT_COLS} FROM clinical_events "
+                "WHERE patient_id=%s AND event_type='OBSERVATION' ORDER BY code, event_date DESC",
                 (patient.patient_id,), "cohort_observations")
             cohort.patients.append(hospital_pb2.CohortPatientData(
                 patient=patient, observations=[row_to_event(o) for o in obs]))
@@ -223,7 +223,7 @@ class PatientDataServicer(hospital_pb2_grpc.PatientDataServiceServicer):
     def GetCohortStats(self, request, context):
         stats = hospital_pb2.CohortStats(condition_code=request.condition_code)
         base = ("(SELECT DISTINCT patient_id FROM clinical_events "
-                "WHERE event_type='CONDITION' AND event_code=%s)")
+                "WHERE event_type='CONDITION' AND code=%s)")
 
         total = query(f"SELECT COUNT(*) FROM patients WHERE patient_id IN {base}",
                       (request.condition_code,), "stats_total")
@@ -250,20 +250,20 @@ class PatientDataServicer(hospital_pb2_grpc.PatientDataServiceServicer):
                 (request.condition_code,), "stats_department"):
             stats.department_distribution[dept] = n
 
-        for code, avg in query(
-                "SELECT event_code, ROUND(AVG(value),2) FROM clinical_events "
-                f"WHERE event_type='OBSERVATION' AND patient_id IN {base} GROUP BY event_code",
+        for cod, avg in query(
+                "SELECT code, ROUND(AVG(CAST(value AS numeric)),2) FROM clinical_events "
+                f"WHERE event_type='OBSERVATION' AND patient_id IN {base} GROUP BY code",
                 (request.condition_code,), "stats_obs_avg"):
-            stats.observation_averages[code] = float(avg)
+            stats.observation_averages[cod] = float(avg)
 
         return stats
 
     @timed("GetProjects")
     def GetProjects(self, request, context):
         rows = query(
-            "SELECT project_id, title, researcher, condition_code, status, valid_until "
-            "FROM projects WHERE researcher=%s ORDER BY project_id",
-            (request.username,), "projects")
+            "SELECT project_id, title, researcher_username as researcher, target_condition_code as condition_code, status, valid_until "
+            "FROM projects WHERE researcher_username=%s",
+            (request.username,), "get_projects")
         return hospital_pb2.ProjectList(projects=[
             hospital_pb2.Project(
                 project_id=r[0], title=r[1], researcher=r[2],

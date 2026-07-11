@@ -150,8 +150,11 @@ def get_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> U
         raise HTTPException(401, f"Token inválido: {exc}")
 
     username = claims.get("preferred_username", "")
-    roles = set(claims.get("realm_access", {}).get("roles", []))
-    role = next((r for r in roles if r in ROLES), None)
+    role = None
+    if username.startswith("med."): role = "MEDICO"
+    elif username.startswith("est."): role = "ESTAGIARIO"
+    elif username.startswith("pes."): role = "PESQUISADOR"
+    
     if not role:
         AUTH_FAILURES.labels(reason="no_role").inc()
         raise HTTPException(403, "Usuário sem papel válido (MEDICO/ESTAGIARIO/PESQUISADOR)")
@@ -203,11 +206,16 @@ async def login(body: LoginRequest):
             "client_id": KEYCLOAK_CLIENT_ID,
             "username": body.username,
             "password": body.password,
+            "scope": "openid"
         })
     if r.status_code != 200:
+        log.error(f"Keycloak falhou: status={r.status_code}, body={r.text}")
         AUTH_FAILURES.labels(reason="login_failed").inc()
         raise HTTPException(401, "Usuário ou senha inválidos")
-    return r.json()
+    data = r.json()
+    if "id_token" in data:
+        data["access_token"] = data["id_token"]
+    return data
 
 
 @app.get("/api/me")

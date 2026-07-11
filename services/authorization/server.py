@@ -124,7 +124,7 @@ class AuthorizationServicer(hospital_pb2_grpc.AuthorizationServiceServicer):
         if req.query_type in PATIENT_QUERIES:
             rows = query(
                 "SELECT 1 FROM user_patient_assignments "
-                "WHERE username=%s AND patient_id=%s AND link_type='medico' AND status='Ativo'",
+                "WHERE username=%s AND patient_id=%s AND assignment_type='ATTENDING' AND active=true",
                 (req.username, req.patient_id), "check_medico_vinculo")
             if rows:
                 return hospital_pb2.AccessResponse(
@@ -144,8 +144,8 @@ class AuthorizationServicer(hospital_pb2_grpc.AuthorizationServiceServicer):
                 reason="Estagiário pode listar pacientes supervisionados")
         if req.query_type in PATIENT_QUERIES:
             rows = query(
-                "SELECT supervisor FROM user_patient_assignments "
-                "WHERE username=%s AND patient_id=%s AND link_type='estagiario' AND status='Ativo'",
+                "SELECT supervisor_username FROM user_patient_assignments "
+                "WHERE username=%s AND patient_id=%s AND assignment_type='TRAINEE' AND active=true",
                 (req.username, req.patient_id), "check_estagiario_vinculo")
             if rows:
                 return hospital_pb2.AccessResponse(
@@ -167,14 +167,14 @@ class AuthorizationServicer(hospital_pb2_grpc.AuthorizationServiceServicer):
         if req.query_type in {"Coorte", "EstatisticasCoorte"}:
             rows = query(
                 "SELECT status, valid_until FROM projects "
-                "WHERE researcher=%s AND condition_code=%s",
+                "WHERE researcher_username=%s AND target_condition_code=%s",
                 (req.username, req.cohort_code), "check_projeto")
             if not rows:
                 return hospital_pb2.AccessResponse(
                     allowed=False, access_level="",
                     reason="Pesquisador não possui projeto para esta condição clínica")
             status, valid_until = rows[0]
-            if status != "Aprovado":
+            if status != "APPROVED":
                 return hospital_pb2.AccessResponse(
                     allowed=False, access_level="",
                     reason=f"Projeto com status '{status}' (não aprovado)")

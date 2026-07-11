@@ -18,7 +18,7 @@ bad()  { printf "  \033[31m[FAIL]\033[0m %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 login() {  # $1=username -> imprime access_token
   curl -s -X POST "$BASE_URL/auth/login" -H 'Content-Type: application/json' \
-    -d "{\"username\":\"$1\",\"password\":\"pspd123\"}" |
+    -d "{\"username\":\"$1\",\"password\":\"PseudoPEP2026!\"}" |
     sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p'
 }
 

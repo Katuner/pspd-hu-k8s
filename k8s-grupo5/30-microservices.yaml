@@ -1,0 +1,180 @@
+# ============================================================
+# Microsserviços gRPC: authorization, patient-data, data-transform
+# ============================================================
+
+# ---------------------- Authorization Service ----------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authorization
+  namespace: grupo-5
+  labels:
+    app: authorization
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authorization
+  template:
+    metadata:
+      labels:
+        app: authorization
+    spec:
+      containers:
+        - name: authorization
+          image: DOCKER_USERNAME/authorization:1.0
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: "192.168.122.1"
+            - name: DB_NAME
+              valueFrom: { secretKeyRef: { name: db-credentials, key: POSTGRES_DB } }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: db-credentials, key: POSTGRES_USER } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: db-credentials, key: POSTGRES_PASSWORD } }
+          ports:
+            - containerPort: 50051
+              name: grpc
+            - containerPort: 9100
+              name: metrics
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "300m", memory: "256Mi" }
+          readinessProbe:
+            tcpSocket: { port: 50051 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authorization
+  namespace: grupo-5
+  labels:
+    app: authorization
+spec:
+  selector:
+    app: authorization
+  ports:
+    - port: 50051
+      targetPort: 50051
+      name: grpc
+    - port: 9100
+      targetPort: 9100
+      name: metrics
+---
+# ---------------------- Patient Data Service ----------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: patient-data
+  namespace: grupo-5
+  labels:
+    app: patient-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: patient-data
+  template:
+    metadata:
+      labels:
+        app: patient-data
+    spec:
+      containers:
+        - name: patient-data
+          image: DOCKER_USERNAME/patient-data:1.0
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: "192.168.122.1"
+            - name: DB_NAME
+              valueFrom: { secretKeyRef: { name: db-credentials, key: POSTGRES_DB } }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: db-credentials, key: POSTGRES_USER } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: db-credentials, key: POSTGRES_PASSWORD } }
+          ports:
+            - containerPort: 50051
+              name: grpc
+            - containerPort: 9100
+              name: metrics
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+          readinessProbe:
+            tcpSocket: { port: 50051 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: patient-data
+  namespace: grupo-5
+  labels:
+    app: patient-data
+spec:
+  selector:
+    app: patient-data
+  ports:
+    - port: 50051
+      targetPort: 50051
+      name: grpc
+    - port: 9100
+      targetPort: 9100
+      name: metrics
+---
+# ---------------------- Data Transform Service ----------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-transform
+  namespace: grupo-5
+  labels:
+    app: data-transform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-transform
+  template:
+    metadata:
+      labels:
+        app: data-transform
+    spec:
+      containers:
+        - name: data-transform
+          image: DOCKER_USERNAME/data-transform:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
+              name: grpc
+            - containerPort: 9100
+              name: metrics
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "300m", memory: "256Mi" }
+          readinessProbe:
+            tcpSocket: { port: 50051 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-transform
+  namespace: grupo-5
+  labels:
+    app: data-transform
+spec:
+  selector:
+    app: data-transform
+  ports:
+    - port: 50051
+      targetPort: 50051
+      name: grpc
+    - port: 9100
+      targetPort: 9100
+      name: metrics
