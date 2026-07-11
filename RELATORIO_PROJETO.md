@@ -93,22 +93,32 @@ As visualizações foram elaboradas no Grafana da disciplina. Foram criados pain
 
 > Seguem os gráficos do Grafana e o console do k6 demonstrando o uso de CPU, Memória e Rede durante a execução do teste de carga:
 
+#### Cenário 1: Baseline com 100 VUs
+*Mostra o sistema em estado de folga. Latência baixíssima, 0% de erro e consumo mínimo de recursos, provando que a aplicação base suporta tráfego leve com folga.*
 ![Uso de CPU com 100 VUs](docs/grafana_cpu_100_vus.png)
 ![Uso de Memória e Banda com 100 VUs](docs/grafana_mem_net_100_vus.png)
 ![Resultado K6 com 100 VUs](docs/k6_result_100_vus.png)
 
+#### Cenário 2: Gargalo com 500 VUs (1 Réplica)
+*Mostra o gargalo da arquitetura. Com apenas 1 réplica, o limite de requisições TCP é atingido e filas começam a se formar, elevando a latência para ~2200ms.*
 ![Uso de CPU com 500 VUs (1 réplica)](docs/grafana_cpu_500_vus_1_replica.png)
 ![Uso de Memória e Banda com 500 VUs (1 réplica)](docs/grafana_mem_net_500_vus_1_replica.png)
 ![Resultado K6 com 500 VUs (1 réplica)](docs/k6_result_500_vus_1_replica.png)
 
-![Uso de CPU com 500 VUs (3 réplicas - Escalabilidade Sucesso)](docs/grafana_cpu_500_vus_3_replicas.png)
-![Uso de Memória e Banda com 500 VUs (3 réplicas - Escalabilidade Sucesso)](docs/grafana_mem_net_500_vus_3_replicas.png)
-![Resultado K6 com 500 VUs (3 réplicas - Escalabilidade Sucesso)](docs/k6_result_500_vus_3_replicas.png)
+#### Cenário 3: Escalabilidade de Sucesso com 500 VUs (3 Réplicas)
+*Mostra o poder do Kubernetes. Com 3 réplicas superando as restrições da cota (reduzimos os limites de CPU), a latência despenca pela metade (~1200ms) e o throughput aumenta.*
+![Uso de CPU com 500 VUs (3 réplicas)](docs/grafana_cpu_500_vus_3_replicas.png)
+![Uso de Memória e Banda com 500 VUs (3 réplicas)](docs/grafana_mem_net_500_vus_3_replicas.png)
+![Resultado K6 com 500 VUs (3 réplicas)](docs/k6_result_500_vus_3_replicas.png)
 
+#### Cenário 4: Colapso por Limite de Infraestrutura com 1000 VUs (1 Réplica)
+*Mostra a arquitetura monótona cedendo à pressão. A latência sobe para níveis exorbitantes (>10.000ms de p95) e o gateway recusa 80% das conexões por Timeout de Socket TCP.*
 ![Uso de CPU com 1000 VUs (1 réplica)](docs/grafana_cpu_1000_vus_1_replica.png)
 ![Uso de Memória e Banda com 1000 VUs (1 réplica)](docs/grafana_mem_net_1000_vus_1_replica.png)
 ![Resultado K6 com 1000 VUs (1 réplica)](docs/k6_result_1000_vus_1_replica.png)
 
+#### Cenário 5: Saturação de Cota e Rede com 1000 VUs (3 Réplicas)
+*Mostra o limite físico ("Teto") do experimento. Mesmo com 3 réplicas operando, o volume de conexões síncronas derruba os sockets TCP e os contêineres entram em CPU Throttling devido à cota de limites estreita que foi configurada.*
 ![Uso de CPU com 1000 VUs (3 réplicas - Limite do Cluster)](docs/grafana_cpu_1000_vus_3_replicas.png)
 ![Uso de Memória e Banda com 1000 VUs (3 réplicas - Limite do Cluster)](docs/grafana_mem_net_1000_vus_3_replicas.png)
 ![Resultado K6 com 1000 VUs (3 réplicas - Limite do Cluster)](docs/k6_result_1000_vus_3_replicas.png)
