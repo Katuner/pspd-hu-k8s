@@ -34,12 +34,8 @@ O grupo utilizou o namespace restrito `grupo-5`. A infraestrutura foi definida a
 As imagens Docker foram compiladas localmente e enviadas ao repositório público `vinialves2020` no Docker Hub, permitindo que os *workers* do cluster fizessem o *pull* para execução.
 
 ### 2.3 Organização do Grupo e Encontros
-*Abaixo está o roteiro de como o grupo se organizou para realizar a atividade e o que ficou resolvido em cada encontro:*
 
-* **Encontro 1 (Data):** Divisão de tarefas, compreensão da arquitetura HL7/FHIR e infraestrutura base.
-* **Encontro 2 (Data):** Criação dos manifestos YAML (Deployments, Services, ConfigMaps, Secrets) e subida da primeira versão da aplicação no cluster.
-* **Encontro 3 (Data):** Testes de carga (Baseline) utilizando k6, ajustes de CPU e observabilidade (Prometheus/Grafana).
-* **Encontro 4 (Data):** Escalabilidade manual, configuração do Autoscaling (HPA) e gravação do vídeo do projeto.
+O grupo, devido a dificuldades de encontro ao final do semestre, com encerramento de projetos e avaliações, decidiu manter a comunicação completamente asíncrona, assim como o desenvolvimento da aplicação.
 
 ### 2.4 Experiência com o Cluster Kubernetes
 A montagem e interação com o cluster Kubernetes em modo cluster proporcionou um grande aprendizado prático. Como a infraestrutura base (nó master e workers) foi providenciada pela disciplina, o grupo focou no papel de **Operação e Deploy** (DevOps). A experiência envolveu:
@@ -139,9 +135,9 @@ As visualizações foram elaboradas no Grafana da disciplina. Foram criados pain
 * **Nota de autoavaliação:** *(Inserir nota)*
 
 ### Lucas Meireles
-* **Pesquisa e trabalho:** *(Inserir texto)*
-* **Aprendizados:** *(Inserir texto)*
-* **Nota de autoavaliação:** *(Inserir nota)*
+* **Pesquisa e trabalho:** Fui responsável pela concepção e configuração inicial de toda a camada de serviços da aplicação, bem como pela elaboração do guia de reprodução do ambiente para os demais membros do grupo. No aspecto técnico, estruturei o código dos cinco serviços (API Gateway, Authorization Service, Patient Data Service, Data Transform Service e Frontend), defini o contrato gRPC compartilhado via Protobuf (`hospital.proto`) e configurei os Dockerfiles de cada componente. Paralelamente, redigi o guia passo a passo de configuração do ambiente, cobrindo desde a instalação das dependências (Docker, kubectl, k6) até o processo de build das imagens, push para o registry público e aplicação dos manifestos no cluster, incluindo os erros encontrados e suas respectivas correções, de modo que qualquer membro do grupo pudesse reproduzir o ambiente de forma independente.
+* **Aprendizados:** O projeto me ensinou que a integração com serviços de identidade externos — como o Keycloak — exige atenção redobrada à documentação e à investigação ativa quando ela está incompleta ou desatualizada. Aprendi que, em ambientes de cluster compartilhado, a ausência de acesso administrativo pleno é a regra, não a exceção, e que contornar essas restrições de forma elegante (como derivar perfis a partir de claims já presentes no JWT em vez de depender de roles configuradas externamente) é uma habilidade essencial de engenharia de sistemas distribuídos. A experiência de documentar cada etapa também reforçou a importância da reprodutibilidade: um sistema bem configurado que não pode ser replicado por outro membro da equipe tem valor limitado em um contexto colaborativo.
+* **Nota de autoavaliação:** 9,5
 
 ### Pedro Haick
 * **Pesquisa e trabalho:** *(Inserir texto)*
