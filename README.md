@@ -44,3 +44,7 @@ Para reproduzir este projeto, seu ambiente precisa de:
 - **bash**, **curl**
 
 > **Nota:** Todos os comandos e instalações estão detalhados no *Guia 03* e *Guia 04*.
+
+## Apresentação do Trabalho
+
+Siga o link a seguir para acessar a gravação de **[Apresentação do Trabalho 2](https://youtu.be/3iiDSD8R_iw)**
