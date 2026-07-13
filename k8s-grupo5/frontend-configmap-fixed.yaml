@@ -1,0 +1,190 @@
+apiVersion: v1
+data:
+  index.html: "<!DOCTYPE html>\r\n<html lang=\"pt-BR\">\r\n\r\n<head>\r\n  <meta charset=\"UTF-8\">\r\n
+    \ <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n
+    \ <title>Hospital Universitário — Portal Clínico HL7/FHIR</title>\r\n  <style>\r\n
+    \   :root {\r\n      --azul: #0b4f79;\r\n      --azul2: #0d6efd;\r\n      --cinza:
+    #f4f6f8;\r\n      --borda: #dbe2e8;\r\n    }\r\n\r\n    * {\r\n      box-sizing:
+    border-box;\r\n      margin: 0;\r\n      padding: 0;\r\n      font-family: 'Segoe
+    UI', system-ui, sans-serif;\r\n    }\r\n\r\n    body {\r\n      background: var(--cinza);\r\n
+    \     color: #22303c;\r\n    }\r\n\r\n    header {\r\n      background: var(--azul);\r\n
+    \     color: #fff;\r\n      padding: 14px 28px;\r\n      display: flex;\r\n      justify-content:
+    space-between;\r\n      align-items: center;\r\n    }\r\n\r\n    header h1 {\r\n
+    \     font-size: 1.15rem;\r\n      font-weight: 600;\r\n    }\r\n\r\n    header
+    .who {\r\n      font-size: .85rem;\r\n      opacity: .9;\r\n    }\r\n\r\n    main
+    {\r\n      max-width: 1100px;\r\n      margin: 24px auto;\r\n      padding: 0
+    16px;\r\n    }\r\n\r\n    .card {\r\n      background: #fff;\r\n      border:
+    1px solid var(--borda);\r\n      border-radius: 10px;\r\n      padding: 22px;\r\n
+    \     margin-bottom: 18px;\r\n    }\r\n\r\n    .card h2 {\r\n      font-size:
+    1rem;\r\n      margin-bottom: 14px;\r\n      color: var(--azul);\r\n    }\r\n\r\n
+    \   label {\r\n      display: block;\r\n      font-size: .8rem;\r\n      margin:
+    8px 0 4px;\r\n      color: #51616e;\r\n    }\r\n\r\n    input,\r\n    select {\r\n
+    \     width: 100%;\r\n      padding: 9px 11px;\r\n      border: 1px solid var(--borda);\r\n
+    \     border-radius: 6px;\r\n      font-size: .9rem;\r\n    }\r\n\r\n    button
+    {\r\n      background: var(--azul2);\r\n      border: none;\r\n      color: #fff;\r\n
+    \     padding: 10px 18px;\r\n      border-radius: 6px;\r\n      font-size: .9rem;\r\n
+    \     cursor: pointer;\r\n      margin-top: 12px;\r\n    }\r\n\r\n    button:hover
+    {\r\n      filter: brightness(1.08);\r\n    }\r\n\r\n    button.sec {\r\n      background:
+    #5c6d7b;\r\n    }\r\n\r\n    .row {\r\n      display: flex;\r\n      gap: 12px;\r\n
+    \     flex-wrap: wrap;\r\n    }\r\n\r\n    .row>div {\r\n      flex: 1;\r\n      min-width:
+    200px;\r\n    }\r\n\r\n    .hidden {\r\n      display: none;\r\n    }\r\n\r\n
+    \   pre {\r\n      background: #0e1620;\r\n      color: #c9e3ff;\r\n      border-radius:
+    8px;\r\n      padding: 16px;\r\n      font-size: .78rem;\r\n      overflow: auto;\r\n
+    \     max-height: 480px;\r\n    }\r\n\r\n    .msg {\r\n      padding: 10px 14px;\r\n
+    \     border-radius: 6px;\r\n      margin-top: 10px;\r\n      font-size: .85rem;\r\n
+    \   }\r\n\r\n    .err {\r\n      background: #fdecec;\r\n      color: #a12622;\r\n
+    \     border: 1px solid #f5c2c0;\r\n    }\r\n\r\n    .ok {\r\n      background:
+    #e8f6ee;\r\n      color: #1c6b3c;\r\n      border: 1px solid #bfe5cd;\r\n    }\r\n\r\n
+    \   .chips {\r\n      display: flex;\r\n      gap: 8px;\r\n      flex-wrap: wrap;\r\n
+    \     margin-top: 10px;\r\n    }\r\n\r\n    .chip {\r\n      background: #e7f0fa;\r\n
+    \     color: var(--azul);\r\n      border-radius: 14px;\r\n      padding: 5px
+    12px;\r\n      font-size: .78rem;\r\n      cursor: pointer;\r\n      border: 1px
+    solid #c8ddf2;\r\n    }\r\n\r\n    table {\r\n      width: 100%;\r\n      border-collapse:
+    collapse;\r\n      margin-top: 12px;\r\n      font-size: .85rem;\r\n    }\r\n\r\n
+    \   th,\r\n    td {\r\n      text-align: left;\r\n      padding: 8px 10px;\r\n
+    \     border-bottom: 1px solid var(--borda);\r\n    }\r\n\r\n    th {\r\n      background:
+    #f0f4f8;\r\n    }\r\n\r\n    .hintbox {\r\n      font-size: .78rem;\r\n      color:
+    #5c6d7b;\r\n      margin-top: 10px;\r\n      line-height: 1.5;\r\n    }\r\n  </style>\r\n</head>\r\n\r\n<body>\r\n
+    \ <header>\r\n    <h1>Hospital Universitário — Portal Clínico (HL7/FHIR)</h1>\r\n
+    \   <div class=\"who\" id=\"who\"></div>\r\n  </header>\r\n  <main>\r\n    <!--
+    ============ LOGIN ============ -->\r\n    <section class=\"card\" id=\"loginCard\">\r\n
+    \     <h2>Autenticação (Keycloak — OAuth2/OpenID Connect)</h2>\r\n      <div class=\"row\">\r\n
+    \       <div><label>Usuário</label><input id=\"username\" placeholder=\"ex.: med.cardoso\"></div>\r\n
+    \       <div><label>Senha</label><input id=\"password\" type=\"password\" placeholder=\"senha\"></div>\r\n
+    \     </div>\r\n      <button onclick=\"login()\">Entrar</button>\r\n      <div
+    id=\"loginMsg\"></div>\r\n      <div class=\"hintbox\" style=\"overflow-x: auto;\">\r\n
+    \       <p style=\"margin-top:0; margin-bottom:8px;\"><b>Usuários de demonstração
+    (senha PseudoPEP2026! para todos):</b></p>\r\n        <table style=\"width: 100%;
+    font-size: 0.9em; text-align: left; margin-top:0;\">\r\n          <tr><th>Usuário</th><th>Nome</th><th>Perfil</th></tr>\r\n
+    \         <tr><td>med.cardoso</td><td>Ana Cardoso</td><td>MÉDICO</td></tr>\r\n
+    \         <tr><td>med.lima</td><td>Bruno Lima</td><td>MÉDICO</td></tr>\r\n          <tr><td>med.almeida</td><td>Carolina
+    Almeida</td><td>MÉDICO</td></tr>\r\n          <tr><td>med.rocha</td><td>Daniel
+    Rocha</td><td>MÉDICO</td></tr>\r\n          <tr><td>med.monteiro</td><td>Elisa
+    Monteiro</td><td>MÉDICO</td></tr>\r\n          <tr><td>est.ferreira</td><td>Lucas
+    Ferreira</td><td>ESTAGIÁRIO</td></tr>\r\n          <tr><td>est.gomes</td><td>Mariana
+    Gomes</td><td>ESTAGIÁRIO</td></tr>\r\n          <tr><td>est.costa</td><td>Rafael
+    Costa</td><td>ESTAGIÁRIO</td></tr>\r\n          <tr><td>est.melo</td><td>Beatriz
+    Melo</td><td>ESTAGIÁRIO</td></tr>\r\n          <tr><td>est.dias</td><td>Pedro
+    Dias</td><td>ESTAGIÁRIO</td></tr>\r\n          <tr><td>pes.mendes</td><td>Carla
+    Mendes</td><td>PESQUISADOR</td></tr>\r\n          <tr><td>pes.araujo</td><td>Eduardo
+    Araújo</td><td>PESQUISADOR</td></tr>\r\n          <tr><td>pes.silveira</td><td>Fernanda
+    Silveira</td><td>PESQUISADOR</td></tr>\r\n        </table>\r\n      </div>\r\n
+    \   </section>\r\n\r\n    <!-- ============ CONSULTAS ============ -->\r\n    <section
+    class=\"card hidden\" id=\"queryCard\">\r\n      <h2>Consultas</h2>\r\n      <div
+    class=\"chips\" id=\"chips\"></div>\r\n      <div class=\"row\" id=\"paramRow\"
+    style=\"margin-top:12px\">\r\n        <div id=\"patientBox\" class=\"hidden\"><label>ID
+    do paciente</label><input id=\"patientId\"\r\n            placeholder=\"ex.: P000001\"></div>\r\n
+    \       <div id=\"cohortBox\" class=\"hidden\"><label>Condição clínica (coorte)</label>\r\n
+    \         <select id=\"cohortCode\">\r\n            <option>DIABETES</option>\r\n
+    \           <option>HIPERTENSAO</option>\r\n            <option>OBESIDADE</option>\r\n
+    \           <option>PNEUMONIA</option>\r\n            <option>ASMA</option>\r\n
+    \           <option>DPOC</option>\r\n            <option>INSUF_CARDIACA</option>\r\n
+    \           <option>DISLIPIDEMIA</option>\r\n          </select>\r\n        </div>\r\n
+    \     </div>\r\n      <button onclick=\"runQuery()\">Consultar</button>\r\n      <button
+    class=\"sec\" onclick=\"logout()\">Sair</button>\r\n      <div id=\"queryMsg\"></div>\r\n
+    \   </section>\r\n\r\n    <section class=\"card hidden\" id=\"resultCard\">\r\n
+    \     <h2>Resposta (JSON HL7/FHIR)</h2>\r\n      <div id=\"tableView\"></div>\r\n
+    \     <pre id=\"result\"></pre>\r\n    </section>\r\n  </main>\r\n\r\n  <script>\r\n
+    \   // A URL do gateway é injetada pelo nginx via /config.js; fallback: mesma
+    origem em /gw\r\n    const GATEWAY = (window.GATEWAY_URL || '/gw');\r\n    let
+    token = null, role = null, currentQuery = null;\r\n\r\n    const QUERIES = {\r\n
+    \     MEDICO: [\r\n        { id: 'patients', label: 'Meus pacientes', path: ()
+    => '/api/patients' },\r\n        { id: 'summary', label: 'Resumo clínico', path:
+    () => `/api/patients/${pid()}/summary`, needsPatient: true },\r\n        { id:
+    'history', label: 'Histórico clínico', path: () => `/api/patients/${pid()}/history`,
+    needsPatient: true },\r\n        { id: 'labs', label: 'Exames laboratoriais',
+    path: () => `/api/patients/${pid()}/labs`, needsPatient: true },\r\n        {
+    id: 'meds', label: 'Medicamentos', path: () => `/api/patients/${pid()}/medications`,
+    needsPatient: true },\r\n      ],\r\n      ESTAGIARIO: [\r\n        { id: 'patients',
+    label: 'Pacientes supervisionados', path: () => '/api/patients' },\r\n        {
+    id: 'summary', label: 'Resumo clínico (parcial)', path: () => `/api/patients/${pid()}/summary`,
+    needsPatient: true },\r\n        { id: 'labs', label: 'Exames (parcial)', path:
+    () => `/api/patients/${pid()}/labs`, needsPatient: true },\r\n        { id: 'meds',
+    label: 'Medicamentos (parcial)', path: () => `/api/patients/${pid()}/medications`,
+    needsPatient: true },\r\n      ],\r\n      PESQUISADOR: [\r\n        { id: 'projects',
+    label: 'Meus projetos', path: () => '/api/research/projects' },\r\n        { id:
+    'cohort', label: 'Coorte (anonimizada)', path: () => `/api/research/cohort/${code()}`,
+    needsCohort: true },\r\n        { id: 'stats', label: 'Estatísticas agregadas',
+    path: () => `/api/research/cohort/${code()}/stats`, needsCohort: true },\r\n      ],\r\n
+    \   };\r\n\r\n    const $ = id => document.getElementById(id);\r\n    const pid
+    = () => $('patientId').value.trim() || 'P000001';\r\n    const code = () => $('cohortCode').value;\r\n\r\n
+    \   async function login() {\r\n      $('loginMsg').innerHTML = '';\r\n      try
+    {\r\n        const r = await fetch(`${GATEWAY}/auth/login`, {\r\n          method:
+    'POST', headers: { 'Content-Type': 'application/json' },\r\n          body: JSON.stringify({
+    username: $('username').value.trim(), password: $('password').value })\r\n        });\r\n
+    \       if (!r.ok) throw new Error((await r.json()).detail || 'Falha no login');\r\n
+    \       token = (await r.json()).access_token;\r\n        const me = await fetch(`${GATEWAY}/api/me`,
+    { headers: { Authorization: `Bearer ${token}` } });\r\n        const info = await
+    me.json();\r\n        role = info.role;\r\n        $('who').textContent = `${info.username}
+    — ${role}`;\r\n        $('loginCard').classList.add('hidden');\r\n        $('queryCard').classList.remove('hidden');\r\n
+    \       renderChips();\r\n      } catch (e) {\r\n        $('loginMsg').innerHTML
+    = `<div class=\"msg err\">${e.message}</div>`;\r\n      }\r\n    }\r\n\r\n    function
+    logout() {\r\n      token = role = null;\r\n      $('who').textContent = '';\r\n
+    \     $('queryCard').classList.add('hidden');\r\n      $('resultCard').classList.add('hidden');\r\n
+    \     $('loginCard').classList.remove('hidden');\r\n    }\r\n\r\n    function
+    renderChips() {\r\n      const box = $('chips');\r\n      box.innerHTML = '';\r\n
+    \     QUERIES[role].forEach(q => {\r\n        const el = document.createElement('span');\r\n
+    \       el.className = 'chip';\r\n        el.textContent = q.label;\r\n        el.onclick
+    = () => selectQuery(q, el);\r\n        box.appendChild(el);\r\n      });\r\n      selectQuery(QUERIES[role][0],
+    box.firstChild);\r\n    }\r\n\r\n    function selectQuery(q, el) {\r\n      currentQuery
+    = q;\r\n      document.querySelectorAll('.chip').forEach(c => c.style.background
+    = '#e7f0fa');\r\n      if (el) el.style.background = '#c5dcf5';\r\n      $('patientBox').classList.toggle('hidden',
+    !q.needsPatient);\r\n      $('cohortBox').classList.toggle('hidden', !q.needsCohort);\r\n
+    \   }\r\n\r\n    async function runQuery() {\r\n      $('queryMsg').innerHTML
+    = '';\r\n      try {\r\n        const r = await fetch(`${GATEWAY}${currentQuery.path()}`,
+    { headers: { Authorization: `Bearer ${token}` } });\r\n        const text = await
+    r.text();\r\n        if (!r.ok) {\r\n          let detail = text;\r\n          try
+    { detail = JSON.parse(text).detail; } catch { }\r\n          throw new Error(`HTTP
+    ${r.status} — ${detail}`);\r\n        }\r\n        const data = JSON.parse(text);\r\n
+    \       $('result').textContent = JSON.stringify(data, null, 2);\r\n        renderTable(data);\r\n
+    \       $('resultCard').classList.remove('hidden');\r\n        $('queryMsg').innerHTML
+    = `<div class=\"msg ok\">Consulta realizada com sucesso.</div>`;\r\n      } catch
+    (e) {\r\n        $('resultCard').classList.add('hidden');\r\n        $('queryMsg').innerHTML
+    = `<div class=\"msg err\">${e.message}</div>`;\r\n      }\r\n    }\r\n\r\n    function
+    renderTable(data) {\r\n      const box = $('tableView');\r\n      box.innerHTML
+    = '';\r\n\r\n      if (data.resourceType === 'Patient') {\r\n        const nome
+    = data.name ? data.name[0].text : '<i>anonimizado</i>';\r\n        const faixa
+    = data.birthDate || (data.extension ? data.extension[0].valueString : '-');\r\n
+    \       box.innerHTML = `<table><tr><th>ID</th><th>Nome</th><th>Sexo</th><th>Nascimento
+    / Faixa</th></tr><tr><td>${data.id}</td><td>${nome}</td><td>${data.gender || '-'}</td><td>${faixa}</td></tr></table>`;\r\n
+    \       return;\r\n      }\r\n\r\n      if (data.resourceType === 'Bundle' &&
+    data.entry) {\r\n        const resources = data.entry.map(e => e.resource).slice(0,
+    50);\r\n        if (!resources.length) return;\r\n\r\n        let html = '';\r\n
+    \       const types = [...new Set(resources.map(r => r.resourceType))];\r\n\r\n
+    \       types.forEach(type => {\r\n          const typedRes = resources.filter(r
+    => r.resourceType === type);\r\n          html += `<h4 style=\"margin: 10px 0
+    5px 0; color: #005A9C;\">${type}</h4><table>`;\r\n\r\n          if (type === 'Patient')
+    {\r\n            html += '<tr><th>ID</th><th>Nome</th><th>Sexo</th><th>Nascimento
+    / Faixa</th><th>Local</th></tr>';\r\n            typedRes.forEach(p => {\r\n              const
+    nome = p.name ? p.name[0].text : '<i>anonimizado</i>';\r\n              const
+    faixa = p.birthDate || (p.extension ? p.extension[0].valueString : '-');\r\n              const
+    addr = p.address ? [p.address[0].city, p.address[0].state].filter(Boolean).join('/')
+    : '-';\r\n              html += `<tr><td>${p.id}</td><td>${nome}</td><td>${p.gender
+    || '-'}</td><td>${faixa}</td><td>${addr}</td></tr>`;\r\n            });\r\n          }
+    else if (type === 'Observation') {\r\n            html += '<tr><th>Exame</th><th>Resultado</th><th>Status</th></tr>';\r\n
+    \           typedRes.forEach(o => {\r\n              const exame = o.code && o.code.text
+    ? o.code.text : (o.code?.coding?.[0]?.display || '-');\r\n              const
+    res = o.valueQuantity ? `${o.valueQuantity.value} ${o.valueQuantity.unit}` : '-';\r\n
+    \             html += `<tr><td>${o.id} - ${exame}</td><td>${res}</td><td>${o.status
+    || '-'}</td></tr>`;\r\n            });\r\n          } else if (type === 'MedicationRequest')
+    {\r\n            html += '<tr><th>Medicamento</th><th>Status</th><th>Intenção</th></tr>';\r\n
+    \           typedRes.forEach(m => {\r\n              const med = m.medicationCodeableConcept
+    ? m.medicationCodeableConcept.text : '-';\r\n              html += `<tr><td>${m.id}
+    - ${med}</td><td>${m.status || '-'}</td><td>${m.intent || '-'}</td></tr>`;\r\n
+    \           });\r\n          } else if (type === 'DiagnosticReport' || type ===
+    'Condition' || type === 'Encounter') {\r\n            html += '<tr><th>Tipo</th><th>Descrição
+    / Código</th><th>Status</th></tr>';\r\n            typedRes.forEach(d => {\r\n
+    \             const desc = (d.code && d.code.text) ? d.code.text : ((d.type &&
+    d.type[0]?.text) ? d.type[0].text : '-');\r\n              html += `<tr><td>${d.resourceType}
+    (${d.id})</td><td>${desc}</td><td>${d.status || '-'}</td></tr>`;\r\n            });\r\n
+    \         } else {\r\n            html += `<tr><th>Tipo</th><th>ID</th></tr>`;\r\n
+    \           typedRes.forEach(r => html += `<tr><td>${r.resourceType}</td><td>${r.id}</td></tr>`);\r\n
+    \         }\r\n          html += '</table>';\r\n        });\r\n\r\n        if
+    (data.entry.length > resources.length)\r\n          html += `<div class=\"hintbox\">Mostrando
+    ${resources.length} recursos de ${data.total || data.entry.length}. JSON completo
+    abaixo.</div>`;\r\n        box.innerHTML = html;\r\n      }\r\n    }\r\n  </script>\r\n
+    \ <script src=\"/config.js\" onerror=\"void(0)\"></script>\r\n</body>\r\n\r\n</html>"
+kind: ConfigMap
+metadata:
+  name: frontend-html
+  namespace: grupo-5

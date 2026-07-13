@@ -8,7 +8,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [{
-        "expr": "sum(rate(http_requests_total{namespace=\"hospital\"}[1m])) by (route)",
+        "expr": "sum(rate(http_requests_total{namespace=\"grupo-5\"}[1m])) by (route)",
         "legendFormat": "{{route}}"
       }],
       "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
@@ -18,9 +18,9 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
-        { "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le))", "legendFormat": "p50" },
-        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le))", "legendFormat": "p95" },
-        { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le))", "legendFormat": "p99" }
+        { "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{namespace=\"grupo-5\"}[1m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace=\"grupo-5\"}[1m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{namespace=\"grupo-5\"}[1m])) by (le))", "legendFormat": "p99" }
       ],
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
     },
@@ -29,7 +29,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "targets": [{
-        "expr": "histogram_quantile(0.95, sum(rate(grpc_request_duration_seconds_bucket{namespace=\"hospital\"}[1m])) by (le, service))",
+        "expr": "histogram_quantile(0.95, sum(rate(grpc_request_duration_seconds_bucket{namespace=\"grupo-5\"}[1m])) by (le, service))",
         "legendFormat": "{{service}}"
       }],
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
@@ -39,9 +39,9 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "targets": [
-        { "expr": "sum(rate(http_requests_total{namespace=\"hospital\", status=~\"4..\"}[1m]))", "legendFormat": "4xx" },
-        { "expr": "sum(rate(http_requests_total{namespace=\"hospital\", status=~\"5..\"}[1m]))", "legendFormat": "5xx" },
-        { "expr": "sum(rate(auth_failures_total{namespace=\"hospital\"}[1m])) by (reason)", "legendFormat": "auth: {{reason}}" }
+        { "expr": "sum(rate(http_requests_total{namespace=\"grupo-5\", status=~\"4..\"}[1m]))", "legendFormat": "4xx" },
+        { "expr": "sum(rate(http_requests_total{namespace=\"grupo-5\", status=~\"5..\"}[1m]))", "legendFormat": "5xx" },
+        { "expr": "sum(rate(auth_failures_total{namespace=\"grupo-5\"}[1m])) by (reason)", "legendFormat": "auth: {{reason}}" }
       ],
       "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
     },
@@ -50,7 +50,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
       "targets": [{
-        "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"hospital\", container!=\"\"}[2m])) by (pod)",
+        "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"grupo-5\", container!=\"\"}[2m])) by (pod)",
         "legendFormat": "{{pod}}"
       }],
       "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
@@ -60,7 +60,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "targets": [{
-        "expr": "sum(container_memory_working_set_bytes{namespace=\"hospital\", container!=\"\"}) by (pod)",
+        "expr": "sum(container_memory_working_set_bytes{namespace=\"grupo-5\", container!=\"\"}) by (pod)",
         "legendFormat": "{{pod}}"
       }],
       "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }
@@ -70,7 +70,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
       "targets": [{
-        "expr": "sum(kube_deployment_status_replicas_ready{namespace=\"hospital\"}) by (deployment)",
+        "expr": "sum(kube_deployment_status_replicas_ready{namespace=\"grupo-5\"}) by (deployment)",
         "legendFormat": "{{deployment}}"
       }],
       "fieldConfig": { "defaults": { "unit": "none", "min": 0 }, "overrides": [] }
@@ -80,8 +80,8 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
       "targets": [
-        { "expr": "sum(rate(db_queries_total{namespace=\"hospital\"}[1m])) by (query)", "legendFormat": "{{query}}" },
-        { "expr": "pg_stat_database_numbackends{datname=\"hospital\"}", "legendFormat": "conexões ativas (pg)" }
+        { "expr": "sum(rate(db_queries_total{namespace=\"grupo-5\"}[1m])) by (query)", "legendFormat": "{{query}}" },
+        { "expr": "pg_stat_database_numbackends{datname=\"grupo-5\"}", "legendFormat": "conexões ativas (pg)" }
       ],
       "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
     },
@@ -90,7 +90,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
       "targets": [{
-        "expr": "sum(rate(authz_decisions_total{namespace=\"hospital\"}[1m])) by (decision, level)",
+        "expr": "sum(rate(authz_decisions_total{namespace=\"grupo-5\"}[1m])) by (decision, level)",
         "legendFormat": "{{decision}} {{level}}"
       }],
       "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
@@ -100,7 +100,7 @@
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
       "targets": [{
-        "expr": "sum(rate(fhir_transformations_total{namespace=\"hospital\"}[1m])) by (resource_type)",
+        "expr": "sum(rate(fhir_transformations_total{namespace=\"grupo-5\"}[1m])) by (resource_type)",
         "legendFormat": "{{resource_type}}"
       }],
       "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }

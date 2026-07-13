@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: vinialves2020/api-gateway:1.0
+          image: vinialves2020/api-gateway:1.1
           imagePullPolicy: Always
           env:
             - name: KEYCLOAK_URL
@@ -45,10 +45,12 @@ spec:
             httpGet: { path: /healthz, port: 8000 }
             initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 5
           livenessProbe:
             httpGet: { path: /healthz, port: 8000 }
             initialDelaySeconds: 15
             periodSeconds: 20
+            timeoutSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -88,7 +90,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: DNS_RESOLVER
-              value: "10.96.0.10"
+              value: "10.43.0.10"
             - name: GATEWAY_UPSTREAM
               value: "api-gateway.grupo-5.svc.cluster.local:8000"
           ports:
@@ -101,6 +103,14 @@ spec:
             httpGet: { path: /, port: 80 }
             initialDelaySeconds: 3
             periodSeconds: 5
+          volumeMounts:
+            - name: html-volume
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+      volumes:
+        - name: html-volume
+          configMap:
+            name: frontend-html
 ---
 apiVersion: v1
 kind: Service
